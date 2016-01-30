@@ -120,7 +120,7 @@ Quick start
 Bundling with Webpack
 ---------------------
 Quill ships only a pre-built javascript file, so Webpack will complain:
-  
+
 ~~~
 Error: ./~/react-quill/~/quill/dist/quill.js
 Critical dependencies:
@@ -143,7 +143,20 @@ See [#7](https://github.com/zenoamaro/react-quill/issues/7) for more details.
 
 API reference
 -------------
-`ReactQuill` accepts a few props:
+
+### Exports
+
+`ReactQuill.Mixin`
+: Provides the bridge between React and Quill. `ReactQuill` implements this mixin; in the same way you can use it to build your own component, or replace it to implement a new core for the default component.
+
+`ReactQuill.Toolbar`
+: The component that renders the basic ReactQuill toolbar. The default collection of items and color swatches is available as `ReactQuill.Toolbar.defaultItems` and `ReactQuill.Toolbar.defaultColors` respectively.
+
+`ReactQuill.Quill`
+: The `Quill` namespace on which you can call `registerModule` and such.
+
+
+### Props
 
 `id`
 : ID to be applied to the DOM element.
@@ -164,7 +177,7 @@ API reference
 : An object specifying what modules are enabled, and their configuration. See the [modules section](http://quilljs.com/docs/modules/) over the Quill documentation for more information on what modules are available.
 
 `toolbar`
-: A list of toolbar items to use as custom configuration for the toolbar. Defaults (that also double as reference) are available as [`ReactQuill.Toolbar.defaultItems`](src/toolbar.js#L21) and [`ReactQuill.Toolbar.defaultColors`](src/toolbar.js#L6). See also the [Toolbar module](http://quilljs.com/docs/modules/toolbar/) over the Quill documentation for more information on the inner workings.
+: A list of toolbar items to use as custom configuration for the toolbar. Pass `false` to disable the toolbar completely. Defaults items are available for reference in [`ReactQuill.Toolbar.defaultItems`](src/toolbar.js#L21) and [`ReactQuill.Toolbar.defaultColors`](src/toolbar.js#L6). See also the [Toolbar module](http://quilljs.com/docs/modules/toolbar/) over the Quill documentation for more information on the inner workings.
 
 `formats`
 : An array of formats to be enabled during editing. All implemented formats are enabled by default. See [Formats](http://quilljs.com/docs/formats/) for a list. Also accepts definitions of custom formats:
@@ -180,8 +193,11 @@ API reference
 ];
 ```
 
+`style`
+: An object with custom CSS rules to apply on the editor's container. Rules should be in React's "camelCased" naming style.
+
 `styles`
-: An object with custom CSS styles to be added to the editor. See [configuration](http://quilljs.com/docs/configuration/) for details.
+: An object with custom CSS selectors and rules to add to the editor. Neither should be in "camelCased" style. Pass `false` to prevent Quill from injecting any style at all (except for text formats). See [configuration](http://quilljs.com/docs/configuration/) for details.
 
 `theme`
 : The name of the theme to apply to the editor. Defaults to `base`.
@@ -196,7 +212,7 @@ API reference
 : Called back with the new selected range, or null when unfocused.
 
 `onKeyPress(event)`
-: Called after a key has been pressed and released. 
+: Called after a key has been pressed and released.
 : Note that, like its native counterpart, this won't be called for special keys such as <kbd>shift</kbd> or <kbd>enter</kbd>. If you need those, hook onto `onKeyDown` or `onKeyUp`.
 
 `onKeyDown(event)`
@@ -205,6 +221,20 @@ API reference
 
 `onKeyUp(event)`
 : Called after a key has been released.
+
+
+### Methods
+
+If you have [a ref to a ReactQuill node](https://facebook.github.io/react/docs/more-about-refs.html), you will be able to invoke the following methods:
+
+`focus()`
+: Focuses the editor.
+
+`blur()`
+: Removes focus from the editor.
+
+`getEditor()`
+: Returns the Quill instance that backs the editor. While you can freely use this to access methods such as `getText()`, please avoid from imperatively manipulating the instance.
 
 
 Building and testing
@@ -228,6 +258,22 @@ More tasks are available on the [Makefile](Makefile):
 
 Changelog
 ---------
+#### v0.3.0
+- Bumped Quill.js to v0.2.0
+- Exposed `focus` and `blur` public methods from component.
+- Exposed `getEditor` public method to retrieve the backing Quill instance from the component.
+- Added callbacks for listening to keyboard events.
+- Added tooltips for toolbar choice controls (@bird512).
+- Added support for child nodes in toolbar items (@1000hz).
+- Added support for custom formats in the configuration (@csk157).
+- Added an option to disable the toolbar entirely by passing `false` to `toolbar`.
+- Added an option to disable styles entirely by passing `false` to `style` (@kkerr1).
+- Fixed an issue where the Quill would duplicate React IDs inside the toolbar leading to errors. Fixes #15.
+- Fixes an issue where the editor could be used while null (@brucedlukens).
+- Fixes an issue where null would be set on the editor. Fixes #48.
+- Fixes an issue where the editor would be instantiated with the wrong value. Fixes #50.
+- Avoiding parsing Quill's `dist` directory with webpack.
+
 #### v0.2.2
 - Added missing `modules` propType and documentation.
 - Children are now cloned so ReactQuill can own their refs. Fixes #20.
@@ -235,20 +281,16 @@ Changelog
 #### v0.2.1
 - Link toolbar button and module are now enabled by default. Fixes #19.
 
-#### v0.2.0
-- Fix React warnings about unique `key` props in toolbar (@Janekk).
-- Sending `delta` and `source` from editor change events. Fixes #17.
-- Rewritten uncontrolled and semi-controlled operation. Should fix #9, #10 and #14.
-- Editor props can now be changed after mounting.
-- Added callback for selection change event. Closes #12.
-
 [Full changelog](CHANGELOG.md)
 
 
 Roadmap
 -------
+- [ ] ES6 rewrite
+- [ ] React 0.14 support
 - [ ] First-class support for modules
-- [ ] Better API for custom controls?
+- [ ] Better API for custom controls
+- [ ] Tests!
 
 
 License

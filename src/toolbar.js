@@ -1,6 +1,7 @@
 'use strict';
 
 var React = require('react'),
+  ReactDOMServer = require('react-dom/server'),
 	T = React.PropTypes;
 
 var defaultColors = [
@@ -104,6 +105,7 @@ var QuillToolbar = React.createClass({
 	renderChoices: function(item, key) {
 		return React.DOM.select({
 			key: item.label || key,
+			title: item.label,
 			className: 'ql-'+item.type },
 			item.items.map(this.renderChoiceItem)
 		);
@@ -141,7 +143,7 @@ var QuillToolbar = React.createClass({
 
 	render: function() {
 		var children = this.props.items.map(this.renderItem);
-		var html = children.map(React.renderToStaticMarkup).join('');
+		var html = children.map(ReactDOMServer.renderToStaticMarkup).join('');
 		return React.DOM.div({
 			className: this.getClassName(),
 			dangerouslySetInnerHTML: { __html:html }
