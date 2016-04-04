@@ -1,6 +1,7 @@
 'use strict';
 
 var React = require('react'),
+	ReactDOMServer = require('react-dom/server'),
 	T = React.PropTypes;
 
 var defaultColors = [
@@ -22,21 +23,21 @@ var defaultItems = [
 
 	{ label:'Formats', type:'group', items: [
 		{ label:'Font', type:'font', items: [
-			{ label:'Sans Serif',  value:'sans-serif' },
+			{ label:'Sans Serif',  value:'sans-serif', selected:true },
 			{ label:'Serif',       value:'serif' },
 			{ label:'Monospace',   value:'monospace' }
 		]},
 		{ type:'separator' },
 		{ label:'Size', type:'size', items: [
-			{ label:'Normal',  value:'10px' },
-			{ label:'Smaller', value:'13px' },
-			{ label:'Larger',  value:'18px' },
-			{ label:'Huge',    value:'32px' }
+			{ label:'Small',  value:'10px' },
+			{ label:'Normal', value:'13px', selected:true },
+			{ label:'Large',  value:'18px' },
+			{ label:'Huge',   value:'32px' }
 		]},
 		{ type:'separator' },
 		{ label:'Alignment', type:'align', items: [
+			{ label:'', value:'left', selected:true },
 			{ label:'', value:'center' },
-			{ label:'', value:'left' },
 			{ label:'', value:'right' },
 			{ label:'', value:'justify' }
 		]}
@@ -58,6 +59,10 @@ var defaultItems = [
 		{ type:'bullet', label:'Bullet' },
 		{ type:'separator' },
 		{ type:'list', label:'List' }
+	]},
+
+	{ label:'Blocks', type:'group', items: [
+		{ type:'image', label:'Image' }
 	]}
 
 ];
@@ -102,11 +107,19 @@ var QuillToolbar = React.createClass({
 	},
 
 	renderChoices: function(item, key) {
-		return React.DOM.select({
+		var attrs = {
 			key: item.label || key,
-			className: 'ql-'+item.type },
-			item.items.map(this.renderChoiceItem)
-		);
+			title: item.label,
+			className: 'ql-'+item.type
+		};
+		var self = this;
+		var choiceItems = item.items.map(function(item, key) {
+			if (item.selected) {
+				attrs.defaultValue = item.value;
+			}
+			return self.renderChoiceItem(item, key);
+		})
+		return React.DOM.select(attrs, choiceItems);
 	},
 
 	renderAction: function(item, key) {
@@ -141,7 +154,7 @@ var QuillToolbar = React.createClass({
 
 	render: function() {
 		var children = this.props.items.map(this.renderItem);
-		var html = children.map(React.renderToStaticMarkup).join('');
+		var html = children.map(ReactDOMServer.renderToStaticMarkup).join('');
 		return React.DOM.div({
 			className: this.getClassName(),
 			dangerouslySetInnerHTML: { __html:html }

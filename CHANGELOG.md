@@ -1,6 +1,42 @@
 Changelog
 =========
 
+v0.4.1
+------
+- Added contents of `dist` to NPM package.
+
+v0.4.0
+------
+This release finally adds support for React 0.14. ⚠️ Shims to support older versions of React have been removed.
+
+- React 0.14 support (@jacktrades, #49)
+- Removed shims for React 0.12 and 0.13
+- Bumped Quill.js to v0.20.1
+- _Normal_ and _smaller_ sizes are not swapped anymore. (#63)
+- Various toolbar choice items are now correctly ordered.
+- Added image tooltips to the default set of modules (@kairxa, #54)
+- Fixed extra white-space in classnames (@asiniy, #67)
+- Published the Quill namespace on ReactQuill (@Sajam, #60)
+- Quill stylesheets are now linked to `dist/` for convenience. (#70)
+- Exposed editor accessor methods in change events. (#33)
+
+v0.3.0
+------
+- Bumped Quill.js to v0.2.0
+- Exposed `focus` and `blur` public methods from component.
+- Exposed `getEditor` public method to retrieve the backing Quill instance from the component.
+- Added callbacks for listening to keyboard events.
+- Added tooltips for toolbar choice controls (@bird512).
+- Added support for child nodes in toolbar items (@1000hz).
+- Added support for custom formats in the configuration (@csk157).
+- Added an option to disable the toolbar entirely by passing `false` to `toolbar`.
+- Added an option to disable styles entirely by passing `false` to `style` (@kkerr1).
+- Fixed an issue where the Quill would duplicate React IDs inside the toolbar leading to errors. Fixes #15.
+- Fixes an issue where the editor could be used while null (@brucedlukens).
+- Fixes an issue where null would be set on the editor. Fixes #48.
+- Fixes an issue where the editor would be instantiated with the wrong value. Fixes #50.
+- Avoiding parsing Quill's `dist` directory with webpack.
+
 v0.2.2
 ------
 - Added missing `modules` propType and documentation.

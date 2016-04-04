@@ -10,11 +10,12 @@ See the [live demo].
 [live demo]: https://zenoamaro.github.io/react-quill/
 
   1. [Quick start](#quick-start)
-  2. [Bundling with Webpack](#bundling-with-webpack)
-  3. [API reference](#api-reference)
-  4. [Building and testing](#building-and-testing)
-  5. [Changelog](#changelog)
-  6. [License](#license)
+  2. [Styles and themes](#styles-and-themes)
+  3. [Bundling with Webpack](#bundling-with-webpack)
+  4. [API reference](#api-reference)
+  5. [Building and testing](#building-and-testing)
+  6. [Changelog](#changelog)
+  7. [License](#license)
 
 
 Quick start
@@ -22,12 +23,6 @@ Quick start
 1. Use straight away:
 
     ~~~jsx
-    /*
-    Include `quill.base.css` to give the editor some basic styles it needs.
-    You can find the _base_ theme in the quill distribution or inside
-    `node_modules`.
-    */
-
     var React = require('react');
     var ReactQuill = require('react-quill');
 
@@ -42,13 +37,14 @@ Quick start
     });
     ~~~
 
-2. Customize a few settings:
+2. Bind to the `onChange` event and customize a few settings:
 
     ~~~jsx
     /*
-    Include a theme like `quill.snow.css` and activate it in the
-    configuration like shown below. You can find the _snow_ theme in the
-    quill distribution or inside `node_modules`.
+    Include `quill.snow.css` to use the editor's standard theme. For example,
+    depending on the structure of your app, you could do something like this:
+
+    <link rel="stylesheet" href="../node_modules/react-quill/dist/quill.snow.css">
     */
 
     var MyComponent = React.createClass({
@@ -117,10 +113,33 @@ Quick start
     See [component.js](src/component.js) for a fully fleshed-out example.
 
 
+Styles and themes
+-----------------
+The Quill editor supports themes.
+
+It includes a full-fledged theme, called _snow_, that is Quill's standard appearance, and a _base_ theme containing only the bare essentials to allow modules like toolbars or tooltips to work.
+
+These stylesheets can be found in the Quill distribution, but for convenience they are also linked among React Quill's `dist`s. In a common case you would activate a theme like this:
+
+    <ReactQuill theme='snow' />
+
+And then link the appropriate stylesheet:
+
+    <link rel="stylesheet" href="../node_modules/react-quill/dist/quill.snow.css">
+
+This may vary depending how application is structured, directories or otherwise. For example, if you use a CSS pre-processor like SASS, you may want to import that stylesheet inside your own.
+
+Quill will include a set of basic styles upon instantiation, so that including `quill.base.css` is not needed. If you would instead like to avoid this style injection, so to include `quill.base.css` manually or use your own styles, pass `false` (not just a _falsy_ value) as `styles`:
+
+    <ReactQuill styles={false}>
+
+Otherwise, you can set this to an object containing selectors and rules, that will be injected inside the document by Quill.
+
+
 Bundling with Webpack
 ---------------------
 Quill ships only a pre-built javascript file, so Webpack will complain:
-  
+
 ~~~
 Error: ./~/react-quill/~/quill/dist/quill.js
 Critical dependencies:
@@ -143,7 +162,20 @@ See [#7](https://github.com/zenoamaro/react-quill/issues/7) for more details.
 
 API reference
 -------------
-`ReactQuill` accepts a few props:
+
+### Exports
+
+`ReactQuill.Mixin`
+: Provides the bridge between React and Quill. `ReactQuill` implements this mixin; in the same way you can use it to build your own component, or replace it to implement a new core for the default component.
+
+`ReactQuill.Toolbar`
+: The component that renders the basic ReactQuill toolbar. The default collection of items and color swatches is available as `ReactQuill.Toolbar.defaultItems` and `ReactQuill.Toolbar.defaultColors` respectively.
+
+`ReactQuill.Quill`
+: The `Quill` namespace on which you can call `registerModule` and such.
+
+
+### Props
 
 `id`
 : ID to be applied to the DOM element.
@@ -164,7 +196,7 @@ API reference
 : An object specifying what modules are enabled, and their configuration. See the [modules section](http://quilljs.com/docs/modules/) over the Quill documentation for more information on what modules are available.
 
 `toolbar`
-: A list of toolbar items to use as custom configuration for the toolbar. Defaults (that also double as reference) are available as [`ReactQuill.Toolbar.defaultItems`](src/toolbar.js#L21) and [`ReactQuill.Toolbar.defaultColors`](src/toolbar.js#L6). See also the [Toolbar module](http://quilljs.com/docs/modules/toolbar/) over the Quill documentation for more information on the inner workings.
+: A list of toolbar items to use as custom configuration for the toolbar. Pass `false` to disable the toolbar completely. Defaults items are available for reference in [`ReactQuill.Toolbar.defaultItems`](src/toolbar.js#L21) and [`ReactQuill.Toolbar.defaultColors`](src/toolbar.js#L6). See also the [Toolbar module](http://quilljs.com/docs/modules/toolbar/) over the Quill documentation for more information on the inner workings.
 
 `formats`
 : An array of formats to be enabled during editing. All implemented formats are enabled by default. See [Formats](http://quilljs.com/docs/formats/) for a list. Also accepts definitions of custom formats:
@@ -180,8 +212,11 @@ API reference
 ];
 ```
 
+`style`
+: An object with custom CSS rules to apply on the editor's container. Rules should be in React's "camelCased" naming style.
+
 `styles`
-: An object with custom CSS styles to be added to the editor. See [configuration](http://quilljs.com/docs/configuration/) for details.
+: An object with custom CSS selectors and rules to add to the editor. Neither should be in "camelCased" style. Pass `false` to prevent Quill from injecting any style at all (except for text formats). See [configuration](http://quilljs.com/docs/configuration/) for details.
 
 `theme`
 : The name of the theme to apply to the editor. Defaults to `base`.
@@ -189,14 +224,14 @@ API reference
 `pollInterval`
 : Interval in ms between checks for local changes in editor contents.
 
-`onChange(value, delta, source)`
-: Called back with the new contents of the editor after change.
+`onChange(content, delta, source, editor)`
+: Called back with the new contents of the editor after change. It will be passed the HTML contents of the editor, a delta object expressing the change-set itself, the source of the change, and finally a read-only proxy to editor accessors such as `getText()`.
 
-`onChangeSelection(range, source)`
-: Called back with the new selected range, or null when unfocused.
+`onChangeSelection(range, source, editor)`
+: Called back with the new selected range, or null when unfocused. It will be passed the selection range, the source of the change, and finally a read-only proxy to editor accessors such as `getBounds()`.
 
 `onKeyPress(event)`
-: Called after a key has been pressed and released. 
+: Called after a key has been pressed and released.
 : Note that, like its native counterpart, this won't be called for special keys such as <kbd>shift</kbd> or <kbd>enter</kbd>. If you need those, hook onto `onKeyDown` or `onKeyUp`.
 
 `onKeyDown(event)`
@@ -205,6 +240,20 @@ API reference
 
 `onKeyUp(event)`
 : Called after a key has been released.
+
+
+### Methods
+
+If you have [a ref to a ReactQuill node](https://facebook.github.io/react/docs/more-about-refs.html), you will be able to invoke the following methods:
+
+`focus()`
+: Focuses the editor.
+
+`blur()`
+: Removes focus from the editor.
+
+`getEditor()`
+: Returns the Quill instance that backs the editor. While you can freely use this to access methods such as `getText()`, please avoid from imperatively manipulating the instance.
 
 
 Building and testing
@@ -228,34 +277,56 @@ More tasks are available on the [Makefile](Makefile):
 
 Changelog
 ---------
-#### v0.2.2
-- Added missing `modules` propType and documentation.
-- Children are now cloned so ReactQuill can own their refs. Fixes #20.
+#### v0.4.1
+- Added contents of `dist` to NPM package.
 
-#### v0.2.1
-- Link toolbar button and module are now enabled by default. Fixes #19.
+#### v0.4.0
+This release finally adds support for React 0.14. ⚠️ Shims to support older versions of React have been removed.
 
-#### v0.2.0
-- Fix React warnings about unique `key` props in toolbar (@Janekk).
-- Sending `delta` and `source` from editor change events. Fixes #17.
-- Rewritten uncontrolled and semi-controlled operation. Should fix #9, #10 and #14.
-- Editor props can now be changed after mounting.
-- Added callback for selection change event. Closes #12.
+- React 0.14 support (@jacktrades, #49)
+- Removed shims for React 0.12 and 0.13
+- Bumped Quill.js to v0.20.1
+- _Normal_ and _smaller_ sizes are not swapped anymore. (#63)
+- Various toolbar choice items are now correctly ordered.
+- Added image tooltips to the default set of modules (@kairxa, #54)
+- Fixed extra white-space in classnames (@asiniy, #67)
+- Published the Quill namespace on ReactQuill (@Sajam, #60)
+- Quill stylesheets are now linked to `dist/` for convenience. (#70)
+- Exposed editor accessor methods in change events. (#33)
+
+#### v0.3.0
+- Bumped Quill.js to v0.20.0
+- Exposed `focus` and `blur` public methods from component.
+- Exposed `getEditor` public method to retrieve the backing Quill instance from the component.
+- Added callbacks for listening to keyboard events.
+- Added tooltips for toolbar choice controls (@bird512).
+- Added support for child nodes in toolbar items (@1000hz).
+- Added support for custom formats in the configuration (@csk157).
+- Added an option to disable the toolbar entirely by passing `false` to `toolbar`.
+- Added an option to disable styles entirely by passing `false` to `style` (@kkerr1).
+- Fixed an issue where the Quill would duplicate React IDs inside the toolbar leading to errors. Fixes #15.
+- Fixes an issue where the editor could be used while null (@brucedlukens).
+- Fixes an issue where null would be set on the editor. Fixes #48.
+- Fixes an issue where the editor would be instantiated with the wrong value. Fixes #50.
+- Avoiding parsing Quill's `dist` directory with webpack.
 
 [Full changelog](CHANGELOG.md)
 
 
 Roadmap
 -------
+- [ ] ES6 rewrite
+- [ ] React 0.14 support
 - [ ] First-class support for modules
-- [ ] Better API for custom controls?
+- [ ] Better API for custom controls
+- [ ] Tests!
 
 
 License
 -------
 The MIT License (MIT)
 
-Copyright (c) 2015, zenoamaro <zenoamaro@gmail.com>
+Copyright (c) 2016, zenoamaro <zenoamaro@gmail.com>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
